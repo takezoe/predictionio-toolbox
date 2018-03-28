@@ -58,7 +58,7 @@ publishArtifact in Test := false
 pomIncludeRepository := { _ => false }
 
 pomExtra := (
-  <url>https://github.com/takezoe/solr-scala-client</url>
+  <url>https://github.com/takezoe/predictionio-toolbox</url>
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -66,8 +66,8 @@ pomExtra := (
     </license>
   </licenses>
   <scm>
-    <url>https://github.com/takezoe/solr-scala-client</url>
-    <connection>scm:git:https://github.com/takezoe/solr-scala-client.git</connection>
+    <url>https://github.com/takezoe/predictionio-toolbox</url>
+    <connection>scm:git:https://github.com/takezoe/predictionio-toolbox</connection>
   </scm>
   <developers>
     <developer>

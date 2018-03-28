@@ -1,6 +1,6 @@
 # Toolbox for Apache PredictionIO
 
-predictionio-toolbox provides a simple way to access event data stored via the event server.
+predictionio-toolbox provides simple fashion to access event data stored via the event server.
 
 For example, you can use this library on Apache Zeppelin to see event data.
 
@@ -11,7 +11,7 @@ First, load the library as follows:
 z.load("com.github.takezoe:predictionio-toolbox_2.11:0.0.1")
 ```
 
-Then you can process events using `PIOToolbox` and register them as tables which can be accessed from SparkSQL:
+Then you can get events using `PIOToolbox` as RDD and register them as tables which can be accessed from SparkSQL:
 
 ```scala
 import com.github.takezoe.predictionio.toolbox._
@@ -51,4 +51,4 @@ select rating, count(*) from rating group by rating
 
 ![Zeppelin](zeppelin.png)
 
-In adition, you can also register event data. See the source code of [PIOToolbox](https://github.com/takezoe/predictionio-toolbox/blob/master/src/main/scala/com/github/takezoe/predictionio/toolbox/PIOToolbox.scala) to know out-of-the-box APIs.
+In adition, you can also register event data using `PIOToolbox`. See the source code of [PIOToolbox](https://github.com/takezoe/predictionio-toolbox/blob/master/src/main/scala/com/github/takezoe/predictionio/toolbox/PIOToolbox.scala) to know out-of-the-box APIs.

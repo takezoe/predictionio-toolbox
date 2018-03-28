@@ -8,7 +8,7 @@ First, load the library as follows:
 
 ```scala
 %dep
-z.load("com.github.takezoe:predictionio-toolbox_2.11:0.0.1-SNAPSHOT")
+z.load("com.github.takezoe:predictionio-toolbox_2.11:0.0.1")
 ```
 
 Then you can process events using `PIOToolbox` and register them as tables which can be accessed from SparkSQL:
@@ -17,7 +17,7 @@ Then you can process events using `PIOToolbox` and register them as tables which
 import com.github.takezoe.predictionio.toolbox._
 
 // Create toolbox with PIO_HOME
-val toolbox = PIOToolbox("/Users/naoki.takezoe/Downloads/PredictionIO-0.12.0-incubating")
+val toolbox = PIOToolbox("/Users/naoki.takezoe/PredictionIO-0.12.1")
 val eventsRDD = toolbox.find("MyApp1")(sc)
 
 case class Rating(

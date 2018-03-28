@@ -2,7 +2,7 @@ name := "predictionio-toolbox"
 
 organization := "com.github.takezoe"
 
-version := "0.0.1-SNAPSHOT"
+version := "0.0.1"
 
 scalaVersion := "2.11.8"
 

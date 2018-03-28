@@ -11,7 +11,7 @@ First, load the library as follows:
 z.load("com.github.takezoe:predictionio-toolbox_2.11:0.0.1-SNAPSHOT")
 ```
 
-Then you can process events and register them as tables which can be accessed from SparkSQL:
+Then you can process events using `PIOToolbox` and register them as tables which can be accessed from SparkSQL:
 
 ```scala
 import com.github.takezoe.predictionio.toolbox._
@@ -50,3 +50,5 @@ select rating, count(*) from rating group by rating
 ```
 
 ![Zeppelin](zeppelin.png)
+
+In adition, you can also register event data. See the source code of [PIOToolbox](https://github.com/takezoe/predictionio-toolbox/blob/master/src/main/scala/com/github/takezoe/predictionio/toolbox/PIOToolbox.scala) to know out-of-the-box APIs.

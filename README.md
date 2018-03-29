@@ -51,4 +51,4 @@ select rating, count(*) from rating group by rating
 
 ![Zeppelin](zeppelin.png)
 
-In adition, you can also register event data using `PIOToolbox`. See the source code of [PIOToolbox](https://github.com/takezoe/predictionio-toolbox/blob/master/src/main/scala/com/github/takezoe/predictionio/toolbox/PIOToolbox.scala) to know all out-of-the-box APIs.
+In addition, you can also register event data using `PIOToolbox`. See the source code of [PIOToolbox](https://github.com/takezoe/predictionio-toolbox/blob/master/src/main/scala/com/github/takezoe/predictionio/toolbox/PIOToolbox.scala) to know all out-of-the-box APIs.

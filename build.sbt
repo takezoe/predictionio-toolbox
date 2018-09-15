@@ -2,7 +2,7 @@ name := "predictionio-toolbox"
 
 organization := "com.github.takezoe"
 
-version := "0.0.2.9-SNAPSHOT"
+version := "0.0.2-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
@@ -47,7 +47,8 @@ publishMavenStyle := true
 publishTo := {
   val nexus = "https://oss.sonatype.org/"
   if (version.value.trim.endsWith("SNAPSHOT"))
-    Some("snapshots" at nexus + "content/repositories/snapshots")
+    //Some("snapshots" at nexus + "content/repositories/snapshots")
+    Some("zeppelin" at "file:///Users/takezoe/Downloads/zeppelin-0.8.0-bin-all/local-repo")
   else
     Some("releases"  at nexus + "service/local/staging/deploy/maven2")
 }

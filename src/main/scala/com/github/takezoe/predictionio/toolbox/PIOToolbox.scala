@@ -38,13 +38,19 @@ case class PIOToolbox(pioHome: String) {
     override def filter(filterExpression: ((String, String)) => Boolean): Map[String, String] = config.filter(filterExpression)
   })
 
-  def apps(): Seq[Map[String, Any]] = {
+  def apps(): String = {
     val apps = storage.Storage.getMetaDataApps()
     val keys = storage.Storage.getMetaDataAccessKeys()
 
-    apps.getAll().map { app =>
-      Map("id" -> app.id, "name" -> app.name, "description" -> app.description, "accessKey" -> keys.getByAppid(app.id))
-    }
+    "%html\n" +
+      "<table border=\"1\">" +
+      "<tr><th>ID</th><th>Name</th><th>Description</th><th>Access Key</th><th>Allowed Event(s)</th></tr>" + (apps.getAll().map { app =>
+        keys.getByAppid(app.id).map { key =>
+          "<tr><td>" + app.id + "</td><td>" + app.name + "</td><td>" + app.description + "</td><td>" + key.key + "</td><td>" +
+            (if(key.events.isEmpty) "(all)" else key.events.mkString(", ")) + "</td></tr>"
+        }.mkString
+      }.mkString) +
+      "</table>"
   }
 
   def createApp(appName: String, templateUrl: String): PIOApp = {

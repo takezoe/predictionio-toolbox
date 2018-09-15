@@ -2,7 +2,7 @@ name := "predictionio-toolbox"
 
 organization := "com.github.takezoe"
 
-version := "0.0.1"
+version := "0.0.2.9-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
@@ -20,6 +20,7 @@ libraryDependencies ++= Seq(
   "org.apache.predictionio"  %% "apache-predictionio-data-jdbc"          % pioVersion,
   "org.apache.predictionio"  %% "apache-predictionio-data-elasticsearch" % pioVersion,
   "org.apache.predictionio"  %% "apache-predictionio-data-hbase"         % pioVersion,
+  "org.eclipse.jgit"         %  "org.eclipse.jgit"                       % "5.0.3.201809091024-r",
   "org.postgresql"           %  "postgresql"                             % "42.1.4",
   "mysql"                    %  "mysql-connector-java"                   % "5.1.46",
   "org.clapper"              %% "grizzled-slf4j"                         % "1.3.2",

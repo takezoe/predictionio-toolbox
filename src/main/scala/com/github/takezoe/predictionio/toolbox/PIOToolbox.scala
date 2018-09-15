@@ -75,10 +75,10 @@ case class PIOToolbox(pioHome: String) {
 
     val algorithms = Serialization.write((json \ "algorithms"))
 
-    PIOApp(pioHome, appName, templateUrl, dir, algorithms)
+    PIOApp(this, appName, templateUrl, dir, algorithms)
   }
 
-  def find(
+  def findEventRDD(
     appName: String,
     channelName: Option[String] = None,
     startTime: Option[DateTime] = None,
@@ -102,7 +102,7 @@ case class PIOToolbox(pioHome: String) {
     )(sc)
   }
 
-  def write(
+  def writeEventRDD(
     events: RDD[Event],
     appName: String,
     channelName: Option[String] = None
@@ -111,7 +111,7 @@ case class PIOToolbox(pioHome: String) {
     Storage.getPEvents().write(events, appId, channelId)(sc)
   }
 
-  def insert(
+  def insertEvent(
     event: Event,
     appName: String,
     channelName: Option[String] = None
@@ -120,7 +120,7 @@ case class PIOToolbox(pioHome: String) {
     Storage.getLEvents().futureInsert(event, appId, channelId)
   }
 
-  def insertBatch(
+  def insertEventBatch(
     events: Seq[Event],
     appName: String,
     channelName: Option[String] = None

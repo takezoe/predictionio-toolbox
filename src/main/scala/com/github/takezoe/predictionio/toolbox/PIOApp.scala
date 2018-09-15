@@ -3,16 +3,21 @@ package com.github.takezoe.predictionio.toolbox
 import java.io.File
 
 import org.apache.commons.io.FileUtils
+import org.apache.predictionio.data.storage.{Event, Storage}
+import org.apache.spark.SparkContext
+import org.apache.spark.rdd.RDD
+import org.joda.time.DateTime
 import org.json4s.NoTypeHints
 import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.JsonMethods.parse
+
 import scala.collection.JavaConverters._
 
 case class Algorithm(name: String, params: Map[String, Any])
 
 case class PIOApp(
-  pioHome: String,
+  toolbox: PIOToolbox,
   appName: String,
   url: String,
   dir: File,
@@ -22,7 +27,7 @@ case class PIOApp(
 
   def build(): Int = {
     println("Compiling application...")
-    executeCommand(Seq(s"$pioHome/bin/pio", "build"))
+    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "build"))
   }
 
   def open(): Unit = {
@@ -42,12 +47,13 @@ case class PIOApp(
     }
 
     println("Training model...")
-    executeCommand(Seq(s"$pioHome/bin/pio", "train"))
+    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "train"))
   }
 
+  // TODO How to shutdown deployed API?
   def deploy(): Int = {
     println("Deploying service...")
-    executeCommand(Seq(s"$pioHome/bin/pio", "deploy"))
+    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "deploy"))
   }
 
   private def executeCommand(command: Seq[String]): Int = {
@@ -72,5 +78,48 @@ case class PIOApp(
     process.exitValue()
   }
 
-  // TODO How to shutdown deployed API?
+  def findEventRDD(
+    channelName: Option[String] = None,
+    startTime: Option[DateTime] = None,
+    untilTime: Option[DateTime] = None,
+    entityType: Option[String] = None,
+    entityId: Option[String] = None,
+    eventNames: Option[Seq[String]] = None,
+    targetEntityType: Option[Option[String]] = None,
+    targetEntityId: Option[Option[String]] = None
+  )(sc: SparkContext): RDD[Event] = {
+    toolbox.findEventRDD(
+      appName,
+      channelName,
+      startTime,
+      untilTime,
+      entityType,
+      entityId,
+      eventNames,
+      targetEntityType,
+      targetEntityId
+    )(sc)
+  }
+
+  def writeEventRDD(
+    events: RDD[Event],
+    channelName: Option[String] = None
+  )(sc: SparkContext): Unit = {
+    toolbox.writeEventRDD(events, appName, channelName)(sc)
+  }
+
+  def insertEvent(
+    event: Event,
+    channelName: Option[String] = None
+  ): Unit = {
+    toolbox.insertEvent(event, appName, channelName)
+  }
+
+  def insertEventBatch(
+    events: Seq[Event],
+    channelName: Option[String] = None
+  ): Unit = {
+    toolbox.insertEventBatch(events, appName, channelName)
+  }
+
 }

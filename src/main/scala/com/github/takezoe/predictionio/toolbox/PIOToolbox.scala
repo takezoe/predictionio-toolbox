@@ -57,13 +57,15 @@ case class PIOToolbox(pioHome: String) {
     val apps = storage.Storage.getMetaDataApps()
     apps.getByName(appName) match {
       case Some(_) =>
-        println(s"Application: ${appName} already exists.")
+        // TODO Use the existing template directory instead of cloning template
+        println(s"${appName} already exists.")
       case None =>
         println(s"Create application: ${appName}")
         apps.insert(App(0, appName, None))
     }
 
     // Clone template
+    println(s"[${appName}] Cloning template...")
     val dir = Files.createTempDirectory(appName).toFile
     Git.cloneRepository().setURI(templateUrl).setDirectory(dir).call()
 

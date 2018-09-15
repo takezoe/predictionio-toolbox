@@ -14,7 +14,8 @@ import org.json4s.native.JsonMethods.parse
 
 import scala.collection.JavaConverters._
 
-case class Algorithm(name: String, params: Map[String, Any])
+
+case class RunningInfo(process: Process, port: Int)
 
 case class PIOApp(
   toolbox: PIOToolbox,
@@ -24,14 +25,15 @@ case class PIOApp(
   algorithms: String
 ){
   private implicit val formats = Serialization.formats(NoTypeHints)
+  private var runningInfo: RunningInfo = null
 
   def build(): Int = {
-    println("Compiling application...")
-    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "build"))
+    println(s"[${appName}] Compiling template...")
+    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "build"), true).exitValue()
   }
 
   def open(): Unit = {
-    executeCommand(Seq("open", dir.getAbsolutePath))
+    executeCommand(Seq("open", dir.getAbsolutePath), true)
   }
 
   def train(algorithms: String = ""): Int = {
@@ -46,17 +48,40 @@ case class PIOApp(
       FileUtils.write(file, jsonString)
     }
 
-    println("Training model...")
-    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "train"))
+    println(s"[${appName}] Training model...")
+    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "train"), true).exitValue()
   }
 
-  // TODO How to shutdown deployed API?
-  def deploy(): Int = {
-    println("Deploying service...")
-    executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "deploy"))
+  def deploy(port: Int = 8000): Unit = {
+    if(runningInfo != null){
+      println(s"[${appName}] Service is running.")
+    } else {
+      println(s"[${appName}] Deploying service...")
+      val process = executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "deploy", "--port", port.toString), false)
+      runningInfo = RunningInfo(process, port)
+      println(s"[${appName}] Service has been started on the port: ${port}")
+    }
   }
 
-  private def executeCommand(command: Seq[String]): Int = {
+  def shutdown(): Unit = {
+    if(runningInfo == null){
+      println(s"[${appName}] Service isn't running on the port ${runningInfo.port}.")
+    } else {
+      println(s"[${appName}] Shutdown service...")
+      runningInfo.process.destroy()
+      runningInfo = null
+    }
+  }
+
+  def status(): String = {
+    if(runningInfo == null){
+      s"[${appName}] Not running"
+    } else {
+      s"[${appName}] Running on the port ${runningInfo.port}"
+    }
+  }
+
+  private def executeCommand(command: Seq[String], waitForCompletion: Boolean): Process = {
     val builder = new ProcessBuilder(command: _*).directory(dir)
 
     // Remove SPARK keys
@@ -69,13 +94,15 @@ case class PIOApp(
     logger1.start()
     logger2.start()
 
-    process.waitFor()
+    if(waitForCompletion){
+      process.waitFor()
 
-    while(!logger1.completed || !logger2.completed){
-      Thread.sleep(100)
+      while(!logger1.completed || !logger2.completed){
+        Thread.sleep(100)
+      }
     }
 
-    process.exitValue()
+    process
   }
 
   def findEventRDD(

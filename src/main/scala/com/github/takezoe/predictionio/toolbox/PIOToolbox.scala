@@ -1,7 +1,6 @@
 package com.github.takezoe.predictionio.toolbox
 
 import java.io.File
-import java.nio.file.Files
 
 import org.apache.commons.io.FileUtils
 import org.apache.predictionio.data.storage
@@ -15,6 +14,7 @@ import org.json4s._
 import org.json4s.native.JsonMethods._
 import org.json4s.native.Serialization
 
+import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
 
 case class PIOToolbox(pioHome: String) {
@@ -22,6 +22,7 @@ case class PIOToolbox(pioHome: String) {
   private val templateDir = new File(s"$pioHome/templates")
   private val file = new java.io.File(s"$pioHome/conf/pio-env.sh")
   private implicit val formats = Serialization.formats(NoTypeHints)
+  private val managedApps = new ListBuffer[PIOApp]()
 
   val config: Map[String, String] = Common.processEnvVars(pioHome,
     FileUtils.readFileToString(file).split("\n").map { line =>
@@ -45,16 +46,20 @@ case class PIOToolbox(pioHome: String) {
 
     "%html\n" +
       "<table border=\"1\">" +
-      "<tr><th>ID</th><th>Name</th><th>Description</th><th>Access Key</th><th>Allowed Event(s)</th><th>Directory</th></tr>" +
+      "<tr><th>ID</th><th>Name</th><th>Status</th><th>Access Key</th><th>Directory</th></tr>" +
       (apps.getAll().map { app =>
         val appKeys = keys.getByAppid(app.id)
         (if(appKeys.isEmpty) Seq(AccessKey("None", app.id, Seq("None"))) else appKeys).map { key =>
           "<tr>" +
             "<td>" + app.id + "</td>" +
             "<td>" + app.name + "</td>" +
-            "<td>" + app.description + "</td>" +
+            "<td>" + {
+              managedApps.find(_.appName == app.name) match {
+                case Some(app) => if(app.runningInfo == null) "Stop" else s"Running: ${app.runningInfo.port}"
+                case None => "Unknown"
+              }
+            } + "</td>" +
             "<td>" + key.key + "</td>" +
-            "<td>" + (if(key.events.isEmpty) "(all)" else key.events.mkString(", ")) + "</td>" +
             "<td>" + {
               val dir = new File(s"$templateDir/${app.name}")
               if(dir.exists()) dir.getAbsolutePath else "None"
@@ -81,7 +86,7 @@ case class PIOToolbox(pioHome: String) {
     val apps = storage.Storage.getMetaDataApps()
     val keys = storage.Storage.getMetaDataAccessKeys()
 
-    apps.getByName(appName) match {
+    val app = apps.getByName(appName) match {
       case Some(_) =>
         val dir = new File(templateDir, appName)
         if(!dir.exists()){
@@ -126,6 +131,9 @@ case class PIOToolbox(pioHome: String) {
 
         PIOApp(this, appName, templateUrl, dir, algorithms)
     }
+
+    managedApps += app
+    app
   }
 
   def findEventRDD(

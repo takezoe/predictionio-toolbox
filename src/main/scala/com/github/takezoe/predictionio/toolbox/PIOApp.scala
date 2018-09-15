@@ -25,7 +25,7 @@ case class PIOApp(
   algorithms: String
 ){
   private implicit val formats = Serialization.formats(NoTypeHints)
-  private var runningInfo: RunningInfo = null
+  private[toolbox] var runningInfo: RunningInfo = null
 
   def build(): Int = {
     println(s"[${appName}] Compiling template...")

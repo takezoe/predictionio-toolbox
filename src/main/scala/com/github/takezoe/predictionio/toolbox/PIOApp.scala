@@ -73,11 +73,13 @@ case class PIOApp(
     }
   }
 
-  def status(): String = {
+  def status(): Boolean = {
     if(runningInfo == null){
-      s"[${appName}] Service is not running"
+      println(s"[${appName}] Service is not running")
+      false
     } else {
-      s"[${appName}] Service is running on the port ${runningInfo.port}"
+      println(s"[${appName}] Service is running on the port ${runningInfo.port}")
+      true
     }
   }
 

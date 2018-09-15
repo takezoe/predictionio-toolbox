@@ -65,7 +65,7 @@ case class PIOApp(
 
   def shutdown(): Unit = {
     if(runningInfo == null){
-      println(s"[${appName}] Service isn't running on the port ${runningInfo.port}.")
+      println(s"[${appName}] Service is not running.")
     } else {
       println(s"[${appName}] Shutdown service...")
       runningInfo.process.destroy()
@@ -75,9 +75,9 @@ case class PIOApp(
 
   def status(): String = {
     if(runningInfo == null){
-      s"[${appName}] Not running"
+      s"[${appName}] Service is not running"
     } else {
-      s"[${appName}] Running on the port ${runningInfo.port}"
+      s"[${appName}] Service is running on the port ${runningInfo.port}"
     }
   }
 

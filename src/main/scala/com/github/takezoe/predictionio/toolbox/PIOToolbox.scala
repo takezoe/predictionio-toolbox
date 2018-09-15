@@ -72,7 +72,7 @@ case class PIOToolbox(pioHome: String) {
     // Check template can be used out-of-the-box
     val file = new File(dir, "engine.json")
     if(!file.exists()){
-      throw new IllegalStateException("This template isn't able to be used out-of-the-box!")
+      throw new IllegalStateException("This template is not able to be used out-of-the-box!")
     }
 
     // Update appName

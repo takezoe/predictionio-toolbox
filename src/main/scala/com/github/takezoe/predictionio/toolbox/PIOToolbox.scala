@@ -16,6 +16,7 @@ import org.json4s.native.Serialization
 
 import scala.collection.mutable.ListBuffer
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.control.Exception.ignoring
 
 case class PIOToolbox(pioHome: String) {
 
@@ -72,8 +73,21 @@ case class PIOToolbox(pioHome: String) {
 
   def deleteApp(appName: String): Unit = {
     val apps = storage.Storage.getMetaDataApps()
+    val keys = storage.Storage.getMetaDataAccessKeys()
+    val events = storage.Storage.getLEvents()
+
     apps.getByName(appName).foreach { x =>
-      apps.delete(x.id)
+      ignoring(classOf[Exception]){
+        apps.delete(x.id)
+      }
+      ignoring(classOf[Exception]){
+        keys.getByAppid(x.id).foreach { key =>
+          keys.delete(key.key)
+        }
+      }
+      ignoring(classOf[Exception]){
+        events.remove(x.id)
+      }
     }
 
     val dir = new File(templateDir, appName)
@@ -85,6 +99,7 @@ case class PIOToolbox(pioHome: String) {
   def createApp(appName: String, templateUrl: String): PIOApp = {
     val apps = storage.Storage.getMetaDataApps()
     val keys = storage.Storage.getMetaDataAccessKeys()
+    val events = storage.Storage.getLEvents()
 
     val app = apps.getByName(appName) match {
       case Some(_) =>
@@ -107,6 +122,7 @@ case class PIOToolbox(pioHome: String) {
 
       case None =>
         val appId = apps.insert(App(0, appName, None))
+        events.init(appId.get)
         keys.insert(AccessKey("", appId.get, Nil))
 
         val dir = new File(templateDir, appName)

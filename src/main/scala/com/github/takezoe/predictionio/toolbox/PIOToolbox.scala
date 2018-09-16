@@ -1,6 +1,7 @@
 package com.github.takezoe.predictionio.toolbox
 
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 import org.apache.commons.io.FileUtils
 import org.apache.predictionio.data.storage
@@ -138,11 +139,10 @@ case class PIOToolbox(pioHome: String) {
         }
 
         // Update appName
-        val json = parse(FileUtils.readFileToString(file))
-          .merge(JObject(JField("datasource", JObject(JField("params", JObject(JField("appName", JString(appName))))))))
-        val jsonString = Serialization.write(json)
-        FileUtils.write(file, jsonString)
+        replaceAppName(dir, appName)
 
+        // Extract algorithm parameters from engine.json
+        val json = parse(FileUtils.readFileToString(file))
         val algorithms = Serialization.write((json \ "algorithms"))
 
         PIOApp(this, appName, templateUrl, dir, algorithms)
@@ -151,6 +151,21 @@ case class PIOToolbox(pioHome: String) {
     managedApps += app
     app
   }
+
+  private def replaceAppName(dir: File, appName: String): Unit = {
+    dir.listFiles().foreach { file =>
+      if(file.isDirectory){
+        replaceAppName(file, appName)
+      } else {
+        val source = FileUtils.readFileToString(file, StandardCharsets.UTF_8)
+        if(source.indexOf("INVALID_APP_NAME") >= 0){
+          val replaced = source.replace("INVALID_APP_NAME", appName)
+          FileUtils.write(file, replaced, StandardCharsets.UTF_8)
+        }
+      }
+    }
+  }
+
 
   def findEventRDD(
     appName: String,

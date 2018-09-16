@@ -48,7 +48,7 @@ case class PIOToolbox(pioHome: String) {
 
     "%html\n" +
       "<table border=\"1\">" +
-      "<tr><th>ID</th><th>Name</th><th>Status</th><th>Access Key</th><th>Directory</th></tr>" +
+      "<tr><th>ID</th><th>Name</th><th>Service Status</th><th>Access Key</th><th>Directory</th></tr>" +
       (apps.getAll().map { app =>
         val appKeys = keys.getByAppid(app.id)
         (if(appKeys.isEmpty) Seq(AccessKey("None", app.id, Seq("None"))) else appKeys).map { key =>

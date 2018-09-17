@@ -42,11 +42,11 @@ case class PIOToolbox(pioHome: String) {
     override def filter(filterExpression: ((String, String)) => Boolean): Map[String, String] = config.filter(filterExpression)
   })
 
-  def apps(): String = {
+  def apps(): Unit = {
     val apps = storage.Storage.getMetaDataApps()
     val keys = storage.Storage.getMetaDataAccessKeys()
 
-    "%html\n" +
+    val html = "%html\n" +
       "<table border=\"1\">" +
       "<tr><th>ID</th><th>Name</th><th>Service Status</th><th>Access Key</th><th>Directory</th></tr>" +
       (apps.getAll().map { app =>
@@ -70,6 +70,10 @@ case class PIOToolbox(pioHome: String) {
         }.mkString
       }.mkString) +
       "</table>"
+
+    println(html)
+
+    ()
   }
 
   def deleteApp(appName: String): Unit = {
@@ -117,9 +121,19 @@ case class PIOToolbox(pioHome: String) {
         }
 
         val json = parse(FileUtils.readFileToString(file))
-        val algorithms = Serialization.write((json \ "algorithms"))
+        val algorithmsParams = Serialization.write((json \ "algorithms"))
+        val engineId = (json \ "engineFactory").asInstanceOf[JString].values
+        val variantId = (json \ "id").asInstanceOf[JString].values
 
-        PIOApp(this, appName, templateUrl, dir, algorithms)
+        PIOApp(
+          toolbox          = this,
+          appName          = appName,
+          url              = templateUrl,
+          dir              = dir,
+          engineId         = engineId,
+          variantId        = variantId,
+          algorithmsParams = algorithmsParams
+        )
 
       case None =>
         val appId = apps.insert(App(0, appName, None))
@@ -143,9 +157,19 @@ case class PIOToolbox(pioHome: String) {
 
         // Extract algorithm parameters from engine.json
         val json = parse(FileUtils.readFileToString(file))
-        val algorithms = Serialization.write((json \ "algorithms"))
+        val algorithmsParams = Serialization.write((json \ "algorithms"))
+        val engineId = (json \ "engineFactory").asInstanceOf[JString].values
+        val variantId = (json \ "id").asInstanceOf[JString].values
 
-        PIOApp(this, appName, templateUrl, dir, algorithms)
+        PIOApp(
+          toolbox          = this,
+          appName          = appName,
+          url              = templateUrl,
+          dir              = dir,
+          engineId         = engineId,
+          variantId        = variantId,
+          algorithmsParams = algorithmsParams
+        )
     }
 
     managedApps += app

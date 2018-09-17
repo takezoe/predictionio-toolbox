@@ -1,8 +1,15 @@
 package com.github.takezoe.predictionio.toolbox
 
+import java.nio.charset.StandardCharsets
+
 import org.apache.predictionio.data.storage.Storage
+
 import scala.collection.mutable
 import grizzled.slf4j.Logger
+import org.apache.commons.io.IOUtils
+import org.apache.http.client.methods.{HttpGet, HttpPost}
+import org.apache.http.impl.client.HttpClients
+import scala.util.control.Exception._
 
 private[toolbox] object Common {
 
@@ -56,4 +63,31 @@ private[toolbox] object Common {
     }.toMap
   }
 
+//  def curl(method: String, url: String): Int = {
+//    using(HttpClients.createDefault()){ client =>
+//      val response = method.toLowerCase() match {
+//        case "get" =>
+//          val request = new HttpGet(url)
+//          client.execute(request)
+//        case "post" =>
+//          val request = new HttpPost(url)
+//          client.execute(request)
+//      }
+//      val in = response.getEntity.getContent
+//      if(in != null){
+//        println(IOUtils.toString(in, StandardCharsets.UTF_8))
+//      }
+//      response.getStatusLine.getStatusCode
+//    }
+//  }
+
+  def using[A <: { def close(): Unit }, B](resource: A)(f: A => B): B =
+    try f(resource)
+    finally {
+      if (resource != null) {
+        ignoring(classOf[Throwable]) {
+          resource.close()
+        }
+      }
+    }
 }

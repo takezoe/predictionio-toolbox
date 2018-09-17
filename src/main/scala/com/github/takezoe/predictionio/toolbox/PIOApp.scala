@@ -3,6 +3,7 @@ package com.github.takezoe.predictionio.toolbox
 import java.io.File
 
 import org.apache.commons.io.FileUtils
+import org.apache.predictionio.data.storage
 import org.apache.predictionio.data.storage.{Event, Storage}
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
@@ -14,15 +15,16 @@ import org.json4s.native.JsonMethods.parse
 
 import scala.collection.JavaConverters._
 
-
-case class RunningInfo(process: Process, port: Int)
+case class RunningInfo(process: Process, port: Int, engineInstanceId: String)
 
 case class PIOApp(
   toolbox: PIOToolbox,
   appName: String,
   url: String,
   dir: File,
-  algorithms: String
+  engineId: String,
+  variantId: String,
+  algorithmsParams: String
 ){
   private implicit val formats = Serialization.formats(NoTypeHints)
   private[toolbox] var runningInfo: RunningInfo = null
@@ -52,14 +54,54 @@ case class PIOApp(
     executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "train"), true).exitValue()
   }
 
-  def deploy(port: Int = 8000): Unit = {
+  def engines(): Unit = {
+    val engines = storage.Storage.getMetaDataEngineInstances()
+
+    val html = "%html\n" +
+      "<table border=\"1\">"+
+      "<tr><th>ID</th><th>Status</th><th>Start Time</th><th>End Time</th><th>Algorithms Parameters</th></tr>" +
+        (engines.getCompleted(engineId, engineVersion, variantId).filter(_.engineId == engineId).map { e =>
+          "<tr>" +
+            "<td>" + e.id + "</td>" +
+            "<td>" + e.status + "</td>" +
+            "<td>" + e.startTime + "</td>" +
+            "<td>" + e.endTime + "</td>" +
+            "<td>" + e.algorithmsParams + "</td>" +
+          "</tr>"
+        }.mkString) + "</table>"
+
+    println("%html\n" + html)
+
+    ()
+  }
+
+  private lazy val engineVersion = {
+    java.security.MessageDigest.getInstance("SHA-1").
+      digest(dir.getCanonicalPath.getBytes).map("%02x".format(_)).mkString
+  }
+
+  def deploy(port: Int = 8000, engineInstanceId: String = ""): Unit = {
     if(runningInfo != null){
       println(s"[${appName}] Service is running.")
     } else {
       println(s"[${appName}] Deploying service...")
-      val process = executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "deploy", "--port", port.toString), false)
-      runningInfo = RunningInfo(process, port)
-      println(s"[${appName}] Service has been started on the port: ${port}")
+      val engines = storage.Storage.getMetaDataEngineInstances()
+
+      val deployEngineInstanceId = engineInstanceId match {
+        case "" => engines.getLatestCompleted(engineId, engineVersion, variantId).map(_.id)
+        case id => engines.getCompleted(engineId, engineVersion, variantId).find(_.id == id).map(_.id)
+      }
+
+      deployEngineInstanceId match {
+        case Some(engineInstanceId) =>
+          val process = executeCommand(Seq(s"${toolbox.pioHome}/bin/pio", "deploy",
+            "--port", port.toString,
+            "--engine-instance-id", engineInstanceId), false)
+          runningInfo = RunningInfo(process, port, engineInstanceId)
+          println(s"[${appName}] Service has been started on the port: ${port}")
+        case None =>
+          println(s"[${appName}] No available engine instance.")
+      }
     }
   }
 
